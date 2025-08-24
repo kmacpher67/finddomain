@@ -70,6 +70,8 @@ def main():
             if domain in found_domains or domain in taken_domains:
                 print(f"{domain} already checked, skipping.")
                 continue
+            else:
+                time.sleep(1)  # Pause to reduce load / avoid rate limits
 
             print(f"Checking {domain}...")
             available = is_available(domain)
@@ -83,7 +85,7 @@ def main():
                 taken_domains.add(domain)
 
             attempts += 1
-            time.sleep(1)  # Pause to reduce load / avoid rate limits
+
         except Exception as e:
             print(f"Unexpected error: {e}. Continuing.")
             attempts += 1
