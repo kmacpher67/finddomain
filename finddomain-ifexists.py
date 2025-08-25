@@ -5,6 +5,27 @@ import os
 import socket
 
 
+FOUND_FILE = "found4charcomain.txt"
+TAKEN_FILE = "taken4domain.txt"
+
+def get_found_domains():
+    """Return the set of found domains from the file."""
+    return read_domains(FOUND_FILE)
+
+def get_taken_domains():
+    """Return the set of taken domains from the file."""
+    return read_domains(TAKEN_FILE)
+
+def add_found_domain(domain, found_domains):
+    """Add a domain to the found file and set."""
+    append_domain(FOUND_FILE, domain)
+    found_domains.add(domain)
+
+def add_taken_domain(domain, taken_domains):
+    """Add a domain to the taken file and set."""
+    append_domain(TAKEN_FILE, domain)
+    taken_domains.add(domain)
+
 def has_dns_record(domain, timeout=1):
     """
     Check if a domain name resolves via DNS (i.e., has an IP address).
@@ -47,7 +68,7 @@ def append_domain(filename, domain):
     with open(filename, 'a') as f:
         f.write(domain + "\n")
 
-def generate_domain(found_domains, taken_domains, max_retries=10000):
+def generate_domain(found_domains, taken_domains, max_retries=1):
     """
     Generate a random 4-character .com domain that:
     - Has not already been checked (not in found_domains or taken_domains)
@@ -76,10 +97,9 @@ def generate_domain(found_domains, taken_domains, max_retries=10000):
             # Already checked, skip
             continue
         if has_dns_record(domain):
-            # Domain resolves, so it's likely taken; skip
+            # Domain resolves, so it's likely taken; save and skip
             print(f"{domain} resolves via DNS, is taken, regen again.")
-            append_domain(taken_file, domain)
-            taken_domains.add(domain)
+            add_taken_domain(domain, taken_domains)
             continue
         return domain
     raise RuntimeError("Could not generate a suitable domain after many attempts.")
@@ -107,12 +127,10 @@ def is_available(domain, retries=3):
     return False
 
 def main():
-    found_file = "found4charcomain.txt"
-    taken_file = "taken4domain.txt"
 
     # Load previously checked domains from files.
-    found_domains = read_domains(found_file)
-    taken_domains = read_domains(taken_file)
+    found_domains = get_found_domains()
+    taken_domains = get_taken_domains()
 
     attempts = 0
     max_attempts = 99999  # Adjust as needed
@@ -120,20 +138,18 @@ def main():
     while attempts < max_attempts:
         try:
             domain = generate_domain(found_domains, taken_domains)
-            time.sleep(1)  # Pause to reduce load / avoid rate limits
 
             print(f"Checking {domain}...")
             available = is_available(domain)
             if available:
                 print(f"Found available domain: {domain}")
-                append_domain(found_file, domain)
-                found_domains.add(domain)
+                add_found_domain(domain, found_domains)
             else:
                 print(f"{domain} is taken.")
-                append_domain(taken_file, domain)
-                taken_domains.add(domain)
+                add_taken_domain(domain, taken_domains)
 
             attempts += 1
+            time.sleep(1)  # Pause to reduce load / avoid rate limits
 
         except Exception as e:
             print(f"Unexpected error: {e}. Continuing.")
