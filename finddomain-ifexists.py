@@ -47,20 +47,42 @@ def append_domain(filename, domain):
     with open(filename, 'a') as f:
         f.write(domain + "\n")
 
-def generate_domain():
-    # Allowed characters:
-    # - First and last: letters (a-z) and digits (0-9)
-    # - Middle positions: letters (a-z), digits (0-9), and hyphen (-)
+def generate_domain(found_domains, taken_domains, max_retries=10000):
+    """
+    Generate a random 4-character .com domain that:
+    - Has not already been checked (not in found_domains or taken_domains)
+    - Does not resolve via DNS (using has_dns_record)
+
+    Args:
+        found_domains (set): Domains already found available.
+        taken_domains (set): Domains already found taken.
+        max_retries (int): Maximum attempts to find a suitable domain.
+
+    Returns:
+        str: A domain name meeting the criteria.
+    """
     allowed_first = 'abcdefghijklmnopqrstuvwxyz0123456789'
-    allowed_mid = allowed_first + '-'  # hyphen allowed in positions 2 and 3
+    allowed_mid = allowed_first + '-'
     allowed_last = allowed_first
-    domain = (
-        random.choice(allowed_first) +
-        random.choice(allowed_mid) +
-        random.choice(allowed_mid) +
-        random.choice(allowed_last)
-    )
-    return domain + '.com'
+
+    for _ in range(max_retries):
+        domain = (
+            random.choice(allowed_first) +
+            random.choice(allowed_mid) +
+            random.choice(allowed_mid) +
+            random.choice(allowed_last)
+        ) + '.com'
+        if domain in found_domains or domain in taken_domains:
+            # Already checked, skip
+            continue
+        if has_dns_record(domain):
+            # Domain resolves, so it's likely taken; skip
+            print(f"{domain} resolves via DNS, is taken, regen again.")
+            append_domain(taken_file, domain)
+            taken_domains.add(domain)
+            continue
+        return domain
+    raise RuntimeError("Could not generate a suitable domain after many attempts.")
 
 def is_available(domain, retries=3):
     """
@@ -97,13 +119,8 @@ def main():
 
     while attempts < max_attempts:
         try:
-            domain = generate_domain()
-            # Skip if this domain was already processed.
-            if domain in found_domains or domain in taken_domains:
-                print(f"{domain} already checked, skipping.")
-                continue
-            else:
-                time.sleep(1)  # Pause to reduce load / avoid rate limits
+            domain = generate_domain(found_domains, taken_domains)
+            time.sleep(1)  # Pause to reduce load / avoid rate limits
 
             print(f"Checking {domain}...")
             available = is_available(domain)
