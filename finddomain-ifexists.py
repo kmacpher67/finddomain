@@ -1,3 +1,6 @@
+# Global tracking variables
+domain_collision_count = 0  # Number of times a generated domain was already found/taken
+domain_generated_count = 0  # Total number of domains generated
 import random
 import time
 import whois  # pip install python-whois
@@ -86,6 +89,7 @@ def generate_domain(found_domains, taken_domains, max_retries=9999):
     allowed_mid = allowed_first + '-'
     allowed_last = allowed_first
 
+    global domain_collision_count, domain_generated_count
     for _ in range(max_retries):
         domain = (
             random.choice(allowed_first) +
@@ -94,9 +98,11 @@ def generate_domain(found_domains, taken_domains, max_retries=9999):
             random.choice(allowed_last)
         ) + '.com'
 
+        domain_generated_count += 1
         if domain in found_domains or domain in taken_domains:
             # Already checked, skip
-            print(f"Generated domain {domain} insider generate domain.")
+            domain_collision_count += 1
+            print(f"Collision: {domain} already checked. Collisions: {domain_collision_count}, Total generated: {domain_generated_count}")
             continue
         if has_dns_record(domain):
             # Domain resolves, so it's likely taken; save as taken and skip
