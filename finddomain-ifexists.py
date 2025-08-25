@@ -99,7 +99,7 @@ def generate_domain(found_domains, taken_domains, max_retries=9999):
             print(f"Generated domain {domain} insider generate domain.")
             continue
         if has_dns_record(domain):
-            # Domain resolves, so it's likely taken; save and skip
+            # Domain resolves, so it's likely taken; save as taken and skip
             print(f"{domain} resolves via DNS, is taken, regen again.")
             add_taken_domain(domain, taken_domains)
             continue
@@ -151,7 +151,7 @@ def main():
                 add_taken_domain(domain, taken_domains)
 
             attempts += 1
-            time.sleep(1)  # Pause to reduce load / avoid rate limits
+            # time.sleep(1)  # Pause to reduce load / avoid rate limits
 
         except Exception as e:
             print(f"Unexpected error: {e}. Continuing.")
