@@ -68,7 +68,7 @@ def append_domain(filename, domain):
     with open(filename, 'a') as f:
         f.write(domain + "\n")
 
-def generate_domain(found_domains, taken_domains, max_retries=1):
+def generate_domain(found_domains, taken_domains, max_retries=9999):
     """
     Generate a random 4-character .com domain that:
     - Has not already been checked (not in found_domains or taken_domains)
@@ -93,8 +93,10 @@ def generate_domain(found_domains, taken_domains, max_retries=1):
             random.choice(allowed_mid) +
             random.choice(allowed_last)
         ) + '.com'
+
         if domain in found_domains or domain in taken_domains:
             # Already checked, skip
+            print(f"Generated domain {domain} insider generate domain.")
             continue
         if has_dns_record(domain):
             # Domain resolves, so it's likely taken; save and skip
