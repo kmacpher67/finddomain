@@ -89,6 +89,7 @@ def generate_domain(found_domains, taken_domains, max_retries=9999):
     allowed_mid = allowed_first + '-'
     allowed_last = allowed_first
 
+    # @TODO better generation strategy to avoid collisions
     global domain_collision_count, domain_generated_count
     for _ in range(max_retries):
         domain = (

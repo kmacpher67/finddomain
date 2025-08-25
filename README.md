@@ -8,3 +8,14 @@ I had a gpt help me write the code, so if it sucks, it's the code generators fau
 
 https://chatgpt.com/share/67d2bb09-c6a8-800f-a0aa-dc175d1938f5
 
+python finddomain-ifexists.py
+
+Using DNS check is faster for is regestiered already. Improved speed 10x
+
+(base) kenmac@kenmac-ThinkPad-P53:~/personal/finddomain$ wc -l found4charcomain.txt 
+45179 found4charcomain.txt
+(base) kenmac@kenmac-ThinkPad-P53:~/personal/finddomain$ wc -l taken4domain.txt 
+60203 taken4domain.txt
+(base) kenmac@kenmac-ThinkPad-P53:~/personal/finddomain$ wc -l taken4domain.txt 
+60287 taken4domain.txt
+(base) kenmac@kenmac-ThinkPad-P53:~/personal/finddomain$ wc -l found4charcomain.txt 
