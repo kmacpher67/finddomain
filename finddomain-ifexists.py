@@ -2,6 +2,38 @@ import random
 import time
 import whois  # pip install python-whois
 import os
+import socket
+
+
+def has_dns_record(domain, timeout=1):
+    """
+    Check if a domain name resolves via DNS (i.e., has an IP address).
+    This is a fast, cost-free way to filter out registered domains before performing a WHOIS lookup.
+
+    Reasoning:
+    - DNS lookups are lightweight and can be performed rapidly for many domains.
+    - If a domain resolves, it is almost certainly registered.
+    - WHOIS queries are only needed for domains that do not resolve, to check if they are truly available.
+    - DNS lookups do not guarantee availability (some registered domains may not resolve), but they are a good first filter.
+
+    Args:
+        domain (str): The domain name to check.
+        timeout (int): Timeout in seconds for the DNS lookup (default: 2).
+
+    Returns:
+        bool: True if the domain resolves (registered), False otherwise.
+    """
+    try:
+        # Set a timeout for the DNS query to avoid hanging
+        socket.setdefaulttimeout(timeout)
+        socket.gethostbyname(domain)
+        return True
+    except socket.gaierror:
+        # Domain does not resolve
+        return False
+    except Exception as e:
+        # Other errors (e.g., network issues)
+        return False
 
 def read_domains(filename):
     """Read domains from a file into a set."""
