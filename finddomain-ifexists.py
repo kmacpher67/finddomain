@@ -10,6 +10,7 @@ import socket
 
 FOUND_FILE = "found4charcomain.txt"
 TAKEN_FILE = "taken4domain.txt"
+ALLOWED_FIRST = 'abcdefghijklmnopqrstuvwxyz0123456789'  # Allowed characters for the first position
 
 def get_found_domains():
     """Return the set of found domains from the file."""
@@ -71,6 +72,25 @@ def append_domain(filename, domain):
     with open(filename, 'a') as f:
         f.write(domain + "\n")
 
+def calculateFirstLetter(starting_letter, found_domains, taken_domains):
+    """
+    Calculate the first letter of the domain with a bias towards letters over digits.
+    This helps avoid generating too many domains that start with digits, which are less common.
+
+    Args:
+        allowed_first (str): String of allowed characters for the first position.
+
+    Returns:
+        str: A string of characters to choose from for the first letter.
+    """
+    # So, the total number of 4-letter domains starting with 'a' is: 1 × 37 × 37 × 36 = 49,284
+
+    count_found = sum(1 for d in found_domains if d.startswith(starting_letter))
+    count_taken = sum(1 for d in taken_domains if d.startswith(starting_letter))
+    print(f"Found domains starting with {starting_letter}: {count_found}")
+    print(f"Taken domains starting with {starting_letter}: {count_taken}")
+    return count_found+count_taken
+
 def generate_domain(found_domains, taken_domains, max_retries=9999):
     """
     Generate a random 4-character .com domain that:
@@ -85,32 +105,53 @@ def generate_domain(found_domains, taken_domains, max_retries=9999):
     Returns:
         str: A domain name meeting the criteria.
     """
-    allowed_first = 'abcdefghijklmnopqrstuvwxyz0123456789'
-    allowed_mid = allowed_first + '-'
-    allowed_last = allowed_first
+    allowed_mid = ALLOWED_FIRST + '-'
+    allowed_last = ALLOWED_FIRST
 
     # @TODO better generation strategy to avoid collisions
     global domain_collision_count, domain_generated_count
-    for _ in range(max_retries):
-        domain = (
-            random.choice(allowed_first) +
-            random.choice(allowed_mid) +
-            random.choice(allowed_mid) +
-            random.choice(allowed_last)
-        ) + '.com'
+    print(f"Allowed first letters position 0=: {ALLOWED_FIRST[0]}")
+    first_letter_permutations_count = calculateFirstLetter(ALLOWED_FIRST[0], found_domains, taken_domains)
+    print(f"First letter permutations count: {first_letter_permutations_count}")
+    first_letter =  ALLOWED_FIRST[0]
+    print(f"First letter chosen: {first_letter}")
 
-        domain_generated_count += 1
-        if domain in found_domains or domain in taken_domains:
-            # Already checked, skip
-            domain_collision_count += 1
-            print(f"Collision: {domain} already checked. Collisions: {domain_collision_count}, Total generated: {domain_generated_count}")
+    for first_pos in range(len(ALLOWED_FIRST)):
+        first_letter_permutations_count = calculateFirstLetter(ALLOWED_FIRST[first_pos + 1], found_domains, taken_domains)
+        if first_letter_permutations_count > 49000:
+            print(f"Skipping first letter {ALLOWED_FIRST[first_pos + 1]} with {first_letter_permutations_count} permutations")
             continue
-        if has_dns_record(domain):
-            # Domain resolves, so it's likely taken; save as taken and skip
-            print(f"{domain} resolves via DNS, is taken, regen again.")
-            add_taken_domain(domain, taken_domains)
-            continue
+        for mid2 in range(len(allowed_mid)):
+            second_letter = allowed_mid[mid2+1]
+            print(f"Allowed mid letters position 2={mid2}: {allowed_mid[mid2+1]}")    
+            for mid3 in range(len(allowed_mid)):
+                third_letter = allowed_mid[mid3+1]
+                print(f"Allowed mid letters position 3 {mid3} =: {allowed_mid[mid3+1]}")    
+
+                for last in range(len(allowed_last)):
+                    print(f" {allowed_last[last]}", end="")
+                    domain = (
+                        first_letter +
+                        second_letter +
+                        third_letter +
+                        allowed_last[last]
+                    ) + '.com'
+
+                    domain_generated_count += 1
+                    if domain in found_domains or domain in taken_domains:
+                        # Already checked, skip
+                        domain_collision_count += 1
+                        print(f"Collision: {domain} already checked. Collisions: {domain_collision_count}, Total generated: {domain_generated_count}")
+                        continue
+                    if has_dns_record(domain):
+                        # Domain resolves, so it's likely taken; save as taken and skip
+                        print(f"{domain} resolves via DNS, is taken, regen again.")
+                        add_taken_domain(domain, taken_domains)
+                        continue
+
+                    print(f"Generated domain might be available: {domain}. Collisions: {domain_collision_count}, Total generated: {domain_generated_count}")
         return domain
+
     raise RuntimeError("Could not generate a suitable domain after many attempts.")
 
 def is_available(domain, retries=3):

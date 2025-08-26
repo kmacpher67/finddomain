@@ -8,7 +8,7 @@ I had a gpt help me write the code, so if it sucks, it's the code generators fau
 
 https://chatgpt.com/share/67d2bb09-c6a8-800f-a0aa-dc175d1938f5
 
-python finddomain-ifexists.py
+python finddomain_ifexists.py
 
 Using DNS check is faster for is regestiered already. Improved speed 10x
 
