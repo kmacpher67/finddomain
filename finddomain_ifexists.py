@@ -60,8 +60,8 @@ def has_dns_record(domain, timeout=1):
         result = dns.resolver.resolve(domain, 'NS')
 
         # Printing record
-        for val in result:
-          print('NS Record : ', val.to_text())
+        # for val in result:
+        #   print(val.to_text(), end="")
 
         # # Finding AAAA record
         # result = dns.resolver.resolve(domain, 'A')
