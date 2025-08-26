@@ -134,19 +134,19 @@ def generate_domain(found_domains, taken_domains, max_retries=9999):
     print(f"First letter chosen: {first_letter}")
 
     for first_pos in range(len(ALLOWED_FIRST)):
-        first_letter_permutations_count = calculateFirstLetter(ALLOWED_FIRST[first_pos + 1], found_domains, taken_domains)
+        first_letter_permutations_count = calculateFirstLetter(ALLOWED_FIRST[first_pos], found_domains, taken_domains)
         if first_letter_permutations_count > 49000:
             print(f"Skipping first letter {ALLOWED_FIRST[first_pos + 1]} with {first_letter_permutations_count} permutations")
             continue
         for mid2 in range(len(allowed_mid)):
-            second_letter = allowed_mid[mid2+1]
+            second_letter = allowed_mid[mid2]
             print(f"Allowed mid letters position 2={mid2}: {allowed_mid[mid2+1]}")    
-            for mid3 in range(len(allowed_mid)):
-                third_letter = allowed_mid[mid3+1]
+            for mid3 in range(len(allowed_mid)-1):
+                third_letter = allowed_mid[mid3]
                 print(f"Allowed mid letters position 3 {mid3} =: {allowed_mid[mid3+1]}")    
 
                 for last in range(len(allowed_last)):
-                    print(f" {allowed_last[last]}", end="")
+                    print(f" {allowed_last[last]}-", end="")
                     domain = (
                         first_letter +
                         second_letter +
@@ -165,9 +165,13 @@ def generate_domain(found_domains, taken_domains, max_retries=9999):
                         print(f"{domain} resolves via DNS, is taken, regen again.")
                         add_taken_domain(domain, taken_domains)
                         continue
+                    else: 
+                        # Domain doesn't resolve
+                        print(f"Generated domain might be available: {domain} Collisions: {domain_collision_count}, Total generated: {domain_generated_count}")
+                        add_found_domain (domain, found_domains)
 
-                    print(f"Generated domain might be available: {domain}. Collisions: {domain_collision_count}, Total generated: {domain_generated_count}")
-        return domain
+                    print(f"Generated domain might be available: {domain} Collisions: {domain_collision_count}, Total generated: {domain_generated_count}")
+        return found_domains
 
     raise RuntimeError("Could not generate a suitable domain after many attempts.")
 
