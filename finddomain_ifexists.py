@@ -195,12 +195,12 @@ def is_available(domain, retries=3):
 
 def main():
 
-    t836host = has_dns_record("c-s6.com")
-    print(f"c-s6.com resolves via DNS: {t836host}")
+    # t836host = has_dns_record("c-s6.com")
+    # print(f"c-s6.com resolves via DNS: {t836host}")
 
-    kmhost = has_dns_record("kenmacpherson.com")
-    print(f"kmhost resolves via DNS: {kmhost}")
-    exit()
+    # kmhost = has_dns_record("kenmacpherson.com")
+    # print(f"kmhost resolves via DNS: {kmhost}")
+    # exit()
 
     # Load previously checked domains from files.
     found_domains = get_found_domains()
