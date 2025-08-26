@@ -7,7 +7,6 @@ import whois  # pip install python-whois
 import os
 import socket
 
-
 FOUND_FILE = "found4charcomain.txt"
 TAKEN_FILE = "taken4domain.txt"
 ALLOWED_FIRST = 'abcdefghijklmnopqrstuvwxyz0123456789'  # Allowed characters for the first position
